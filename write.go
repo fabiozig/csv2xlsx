@@ -33,6 +33,15 @@ func writeAllSheets(xlFile *xlsx.File, dataFiles []string, sheetNames []string, 
 		if err != nil {
 			return err
 		}
+
+		if sheet.DataValidations != nil {
+			for _, item := range sheet.DataValidations {
+				x, _, err := xlsx.GetCoordsFromCellIDString(item.Sqref)
+				if err == nil {
+					item.Sqref = item.Sqref + ":" + xlsx.GetCellIDStringFromCoords(x, sheet.MaxRow-1)
+				}
+			}
+		}
 	}
 
 	return nil
