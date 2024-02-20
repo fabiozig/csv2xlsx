@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io"
+	"slices"
 	"unicode"
 
 	"github.com/tealeg/xlsx/v3"
@@ -21,7 +22,6 @@ func writeAllSheets(xlFile *xlsx.File, dataFiles []string, sheetNames []string, 
 		if exampleRowNumber != 0 && exampleRowNumber <= sheet.MaxRow {
 			// example row counting from 1
 			exampleRow, _ = sheet.Row(exampleRowNumber - 1)
-
 			err = sheet.RemoveRowAtIndex(exampleRowNumber - 1)
 			if err != nil {
 				return err
@@ -97,6 +97,21 @@ func buildXls(p *params) (err error) {
 	err = writeAllSheets(xlFile, p.input, p.sheets, p.exampleRow, p.delimiter)
 	if err != nil {
 		return err
+	}
+
+	if p.deleteUnused {
+		var toDelete []int
+		for i, sheet := range xlFile.Sheets {
+			if !slices.Contains(p.sheets, sheet.Name) {
+				toDelete = append(toDelete, i)
+			}
+		}
+
+		for i, indexToDelete := range toDelete {
+			index := indexToDelete - i
+			delete(xlFile.Sheet, xlFile.Sheets[index].Name)
+			xlFile.Sheets = append(xlFile.Sheets[:index], xlFile.Sheets[index+1:]...)
+		}
 	}
 
 	return xlFile.Save(p.output)

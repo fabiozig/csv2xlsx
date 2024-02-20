@@ -16,6 +16,8 @@ type params struct {
 	sheets     []string
 	exampleRow int
 
+	deleteUnused bool
+
 	delimiter rune
 }
 
@@ -33,7 +35,7 @@ func initCommandLine(args []string) error {
 	app.Name = "csv2xlsx"
 	app.Usage = "Convert CSV data to XLSX - especially the big one. \n\n" +
 		"Example: \n" +
-		"   csv2xlsx --template example/template.xlsx --sheet Sheet_1 --sheet Sheet_2 --exampleRow 2 --output result.xlsx data.csv data2.csv \n" +
+		"   csv2xlsx --template example/template.xlsx --sheet Sheet_1 --sheet Sheet_2 --exampleRow 2 --deleteUnused --output result.xlsx data.csv data2.csv \n" +
 		"   csv2xlsx.exe -t example\\template.xlsx -s Sheet_1 -s Sheet_2 -r 2 -o result.xlsx data.csv data2.csv "
 
 	app.Version = version + " built in " + date + " from commit: [" + commit + "] by " + builtBy
@@ -56,6 +58,11 @@ func initCommandLine(args []string) error {
 			Aliases: []string{"d"},
 			Value:   ",",
 			Usage:   "one `letter` delimiter used in csv file",
+		},
+		&cli.BoolFlag{
+			Name:  "deleteUnused",
+			Value: false,
+			Usage: "deleteUnused `flag` to indicate if the template unused sheets must be deleted automatically.",
 		},
 		&cli.IntFlag{
 			Name:    "exampleRow",
@@ -121,6 +128,7 @@ func checkAndReturnParams(c *cli.Context) (*params, error) {
 	//
 
 	p.exampleRow = c.Int("exampleRow")
+	p.deleteUnused = c.Bool("deleteUnused")
 	p.sheets = c.StringSlice("sheets")
 
 	//
