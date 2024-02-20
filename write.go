@@ -102,7 +102,7 @@ func buildXls(p *params) (err error) {
 	if p.deleteUnused {
 		var toDelete []int
 		for i, sheet := range xlFile.Sheets {
-			if !slices.Contains(p.sheets, sheet.Name) {
+			if !slices.Contains(p.sheets, sheet.Name) || sheet.MaxRow < p.exampleRow {
 				toDelete = append(toDelete, i)
 			}
 		}
